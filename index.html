@@ -1,194 +1,139 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome Universe</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Verification</title>
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: black;
-      color: white;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    #videoWrapper {
       position: relative;
-    }canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 0;
-}
-
-.content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  text-align: center;
-}
-
-h1 {
-  font-size: 3em;
-  animation: fadeIn 2s ease-out;
-}
-
-#namePopup {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid white;
-  padding: 20px;
-  border-radius: 15px;
-  margin-top: 20px;
-  animation: fadeIn 2s ease-out;
-}
-
-#nameInput, #submitName {
-  padding: 10px;
-  border-radius: 10px;
-  margin-top: 10px;
-  font-size: 1em;
-}
-
-#submitName {
-  background: #00c6ff;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-#welcomeUser {
-  font-size: 2em;
-  margin-top: 30px;
-  display: none;
-  animation: fadeIn 1.5s ease-out;
-}
-
-#actionBtn {
-  margin-top: 20px;
-  padding: 15px 30px;
-  font-size: 1.2em;
-  border-radius: 25px;
-  background: linear-gradient(135deg, #ff4081, #81d4fa);
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: none;
-  animation: buttonFade 1.5s ease-out forwards;
-}
-
-#popup {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.8);
-  background-color: white;
-  color: black;
-  padding: 20px;
-  border-radius: 20px;
-  text-align: center;
-  z-index: 3;
-  animation: popupAnim 0.5s ease-out forwards;
-}
-
-#popup img {
-  width: 300px;
-  border-radius: 15px;
-}
-
-audio {
-  display: none;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes buttonFade {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes popupAnim {
-  to { transform: translate(-50%, -50%) scale(1); }
-}
-
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 3/4;
+    }
+    #video {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    #capsule {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 60%;
+      border: 3px dashed #ffffff90;
+      border-radius: 50% / 30%;
+    }
+    #scanLine {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 2px;
+      background-color: #00f0ff;
+      animation: scan 2s infinite;
+    }
+    @keyframes scan {
+      0% { top: 15%; }
+      50% { top: 65%; }
+      100% { top: 15%; }
+    }
+    #status {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+      color: #0f0;
+    }
+    #verifiedImg {
+      display: none;
+      width: 100px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <canvas id="stars"></canvas>  <div class="content">
-    <h1>🌟 Welcome to the Galaxy 🌙</h1><div id="namePopup">
-  <label for="nameInput">Enter your name:</label><br>
-  <input type="text" id="nameInput" placeholder="Your name...">
-  <button id="submitName">Submit</button>
-</div>
+  <div id="videoWrapper">
+    <video id="video" autoplay muted></video>
+    <canvas id="overlay"></canvas>
+    <div id="capsule"></div>
+    <div id="scanLine"></div>
+    <div id="status">Initializing camera...</div>
+  </div>
+  <img id="verifiedImg" src="https://your-image-link.com/verified.png" alt="Verified">  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>  <script>
+    const video = document.getElementById('video');
+    const statusText = document.getElementById('status');
+    const verifiedImg = document.getElementById('verifiedImg');
 
-<div id="welcomeUser"></div>
-<button id="actionBtn"></button>
-
-  </div>  <div id="popup">
-    <img src="360_F_52796600_r07cNMfhp8BruhWBWq3pEYJSx9OcukJc.webp" alt="Special Image" />
-    <audio id="sound">
-      <source src="your-sound.mp3" type="audio/mpeg">
-    </audio>
-  </div>  <script>
-    const canvas = document.getElementById('stars');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const stars = Array(150).fill().map(() => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 1.5,
-      dx: (Math.random() - 0.5) * 0.2,
-      dy: (Math.random() - 0.5) * 0.2
-    }));
-
-    function animateStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      stars.forEach(s => {
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-        s.x += s.dx;
-        s.y += s.dy;
-
-        if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
-        if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
-      });
-      requestAnimationFrame(animateStars);
-    }
-    animateStars();
-
-    const submitBtn = document.getElementById("submitName");
-    const nameInput = document.getElementById("nameInput");
-    const namePopup = document.getElementById("namePopup");
-    const welcomeUser = document.getElementById("welcomeUser");
-    const actionBtn = document.getElementById("actionBtn");
-    const popup = document.getElementById("popup");
-    const sound = document.getElementById("sound");
-
-    submitBtn.addEventListener("click", () => {
-      const userName = nameInput.value.trim();
-      if (userName) {
-        namePopup.style.display = "none";
-        welcomeUser.textContent = `✨ Welcome to ${userName}! ✨`;
-        welcomeUser.style.display = "block";
-        setTimeout(() => {
-          actionBtn.textContent = `Please Click, ${userName}`;
-          actionBtn.style.display = "inline-block";
-        }, 1000);
+    async function startVideo() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+        video.srcObject = stream;
+      } catch (err) {
+        statusText.textContent = 'Camera permission is required for face verification!';
       }
+    }
+
+    async function init() {
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/models')
+      ]);
+      startVideo();
+    }
+
+    video.addEventListener('play', () => {
+      const canvas = faceapi.createCanvasFromMedia(video);
+      document.getElementById('overlay').appendChild(canvas);
+      const displaySize = { width: video.videoWidth, height: video.videoHeight };
+      faceapi.matchDimensions(canvas, displaySize);
+      
+      const interval = setInterval(async () => {
+        const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+        const resized = faceapi.resizeResults(detections, displaySize);
+        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+
+        if (resized && resized.landmarks) {
+          const eyes = resized.landmarks.getLeftEye().concat(resized.landmarks.getRightEye());
+          const eyeCenterY = eyes.reduce((sum, pt) => sum + pt.y, 0) / eyes.length;
+          const scanY = document.getElementById('scanLine').getBoundingClientRect().top - video.getBoundingClientRect().top;
+
+          if (Math.abs(eyeCenterY - scanY) < 15) {
+            statusText.textContent = '✅ Face Verified Successfully!';
+            verifiedImg.style.display = 'block';
+            clearInterval(interval);
+          } else {
+            statusText.textContent = 'Align your eyes with the scan line...';
+          }
+        } else {
+          statusText.textContent = 'Detecting face...';
+        }
+      }, 300);
     });
 
-    actionBtn.addEventListener("click", () => {
-      popup.style.display = "block";
-      sound.play();
-    });
+    init();
   </script></body>
-                                           </html>
+</html>
